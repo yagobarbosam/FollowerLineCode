@@ -2,43 +2,56 @@
  * File:   ReflectanceSensors.c
  * Author: Yago
  *
- * Created on 4 de Junho de 2016, 10:38
+ * Created on 8 de Outubro de 2016, 10:38
  */
+
+//------------------------------------------------
+//               Define Adjustable
+//------------------------------------------------
 
 #include <p18f4550.h>
 #include "ReflectanceSensors.h"
 #include "conversorAD.h"
 
+//------------------------------------------------
+//               Define Adjustable
+//------------------------------------------------
 
 #define LENGHT_BAR 580 // mm
 #define NUM_SENSORS 8 
 #define LENGHT_SENSOR 27
 
+//------------------------------------------------
+//               Define Auxiliary
+//------------------------------------------------
 
 #define SPACING_SENSOR LENGHT_BAR/(NUM_SENSORS-1)
-
 #define SPACING_SENSOR_HALF SPACING_SENSOR/2
-
 #define TRESHOLD_SAMPLE 20
 
-unsigned int second_portion[8] = {0, SPACING_SENSOR / 2, SPACING_SENSOR, 3 * SPACING_SENSOR / 2, 2 * SPACING_SENSOR,
-    5 * SPACING_SENSOR / 2, 3 * SPACING_SENSOR, 7 * SPACING_SENSOR / 2};
+//------------------------------------------------
+//               Variables Auxiliary
+//------------------------------------------------
 
-
+unsigned int second_portion[8] = {0, SPACING_SENSOR / 2, SPACING_SENSOR, 3 * SPACING_SENSOR / 2, 
+2 * SPACING_SENSOR, 5 * SPACING_SENSOR / 2, 3 * SPACING_SENSOR, 7 * SPACING_SENSOR / 2};
 
 unsigned int MAX_sensorns[8] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000},
 MIN_sensorns[8] = {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
 
-unsigned char sensor_bar[8];
-
+unsigned char sensor_bar[NUM_SENSORS];
 unsigned int distance_line = 0;
+
+//------------------------------------------------
+//                   Functions 
+//------------------------------------------------
 
 void calibrates_sensors(void) {
 
-    unsigned int bar_sensorns[8];
+    unsigned int bar_sensorns[NUM_SENSORS];
     unsigned int i;
 
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < NUM_SERSORS; i++) {
 
         bar_sensorns[i] = valor_AD(i);
 
@@ -53,8 +66,6 @@ void calibrates_sensors(void) {
 
 }
 
-// Seguindo a Documentação
-
 void read_sensorns(color color_line, unsigned char threshold_value) {
 
     unsigned char i, max_index = 0, index_over_limit;
@@ -62,7 +73,7 @@ void read_sensorns(color color_line, unsigned char threshold_value) {
     unsigned char num_fired = 0, num_over_limit_line = 0;
     unsigned int third_portion;
 
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < NUM_SERSORS; i++) {
         valueAD = valor_AD(i);
         if (valueAD > MAX_sensorns[i]) valueAD = MAX_sensorns[i];
         if (valueAD < MIN_sensorns[i]) valueAD = MIN_sensorns[i];
