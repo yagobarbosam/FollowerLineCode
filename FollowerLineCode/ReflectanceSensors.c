@@ -33,11 +33,10 @@
 //               Variables Auxiliary
 //------------------------------------------------
 
-unsigned int second_portion[8] = {0, SPACING_SENSOR / 2, SPACING_SENSOR, 3 * SPACING_SENSOR / 2, 
-2 * SPACING_SENSOR, 5 * SPACING_SENSOR / 2, 3 * SPACING_SENSOR, 7 * SPACING_SENSOR / 2};
+unsigned int second_portion[NUM_SENSORS];
 
-unsigned int MAX_sensorns[8] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000},
-MIN_sensorns[8] = {0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF};
+unsigned int MAX_sensorns[NUM_SENSORS];
+unsigned int MIN_sensorns[NUM_SENSORS];
 
 unsigned char sensor_bar[NUM_SENSORS];
 unsigned int distance_line = 0;
@@ -46,12 +45,27 @@ unsigned int distance_line = 0;
 //                   Functions 
 //------------------------------------------------
 
+void reflectanceSensors_init(void){
+    
+    unsigned char i;
+    
+    for(i=0;i < NUM_SENSORS; i++ ){
+        MAX_sensorns[i] = 0x0000;
+        MIN_sensorns[i] = 0xFFFF;
+        
+        second_portion[i] = i*SPACING_SENSOR/2;
+        
+    }
+    
+}    
+
+
 void calibrates_sensors(void) {
 
     unsigned int bar_sensorns[NUM_SENSORS];
     unsigned int i;
 
-    for (i = 0; i < NUM_SERSORS; i++) {
+    for (i = 0; i < NUM_SENSORS; i++) {
 
         bar_sensorns[i] = valor_AD(i);
 
@@ -73,13 +87,13 @@ void read_sensorns(color color_line, unsigned char threshold_value) {
     unsigned char num_fired = 0, num_over_limit_line = 0;
     unsigned int third_portion;
 
-    for (i = 0; i < NUM_SERSORS; i++) {
+    for (i = 0; i < NUM_SENSORS; i++) {
         valueAD = valor_AD(i);
         if (valueAD > MAX_sensorns[i]) valueAD = MAX_sensorns[i];
         if (valueAD < MIN_sensorns[i]) valueAD = MIN_sensorns[i];
 
         var_assist = 64 * (valueAD - MIN_sensorns[i]) / (MAX_sensorns[i] - MIN_sensorns[i]);
-        sensor_bar[i] = var_assist; // Lembrando que estamos igualando um INT com um CHAR
+        sensor_bar[i] = var_assist; 
 
         if (color_line == WHITE) {
             sensor_bar[i] = 64 - sensor_bar[i];
