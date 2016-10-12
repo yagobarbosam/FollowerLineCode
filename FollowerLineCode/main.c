@@ -14,10 +14,13 @@
 #include "ReflectanceSensors.h"
 #include "serial.h"
 #include "averageMoving.h"
+#include "encoderMotor.h"
 
 #define LIMITE 50
 
 long unsigned int pwm;
+
+unsigned int direita, esquerda;
 
 void interrupt high_priority ISR() {
 
@@ -25,22 +28,27 @@ void interrupt high_priority ISR() {
 
     PWMtimer0_B(100);
 
+    encoder_interrupt();
+    update_speed();
+
 }
 
 void main(void) {
 
-    unsigned int valor , filtered;
+    unsigned int valor, filtered;
     char valorH, valorL, i;
     unsigned long int j;
+
+    
 
     TRISD1 = 0;
     TRISD3 = 0;
 
     TRISB0 = 0;
     TRISC0 = 0;
-    
+
     RC0 = 0;
-    
+
     RD1 = 1;
     RD3 = 1;
 
@@ -49,8 +57,8 @@ void main(void) {
     DonPimpolhoBoard_init();
 
     serial_config();
-        
-    
+
+
 
 
     //    linha_branca();
@@ -58,7 +66,10 @@ void main(void) {
 
     for (;;) {
 
-                calibrates_sensors();
+        calibrates_sensors();
+
+        direita = get_speed(ENCODER_RIGHT);
+        esquerda = get_speed(ENCODER_LEFT);
 
         if (RD5) {
             break;
@@ -66,26 +77,26 @@ void main(void) {
     }
 
     RC0 = 1;
-    
+
     for (;;) {
-        
-            read_sensorns(BLACK,55);        
 
-            valor = return_distanceLine();
-            
-            filtered = moving_avarege(valor);
+        read_sensorns(BLACK, 55);
 
-            enviaSerial('V');
-            enviaSerial((valor / 1000) + 48);
-            enviaSerial(((valor / 100) % 10) + 48);
-            enviaSerial((valor % 100) / 10 + 48);
-            enviaSerial((((valor % 1000) % 100) % 10) + 48);
-            enviaSerial('F');
-            enviaSerial((filtered / 1000) + 48);
-            enviaSerial(((filtered / 100) % 10) + 48);
-            enviaSerial((filtered % 100) / 10 + 48);
-            enviaSerial((((filtered % 1000) % 100) % 10) + 48);
-            
+        valor = return_distanceLine();
+
+        filtered = moving_avarege(valor);
+
+        enviaSerial('V');
+        enviaSerial((valor / 1000) + 48);
+        enviaSerial(((valor / 100) % 10) + 48);
+        enviaSerial((valor % 100) / 10 + 48);
+        enviaSerial((((valor % 1000) % 100) % 10) + 48);
+        enviaSerial('F');
+        enviaSerial((filtered / 1000) + 48);
+        enviaSerial(((filtered / 100) % 10) + 48);
+        enviaSerial((filtered % 100) / 10 + 48);
+        enviaSerial((((filtered % 1000) % 100) % 10) + 48);
+
 
 
         for (j = 0; j < 10000; j++);
