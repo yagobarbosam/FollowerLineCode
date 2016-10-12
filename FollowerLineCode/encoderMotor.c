@@ -12,12 +12,13 @@
 #define ENCL RB5                   // PINO CANAL 2 DO RECPTOR
 #define TMR_READ TMR1 
 #define NULL 0
-
-
+#define LIMIT_16BIT 65535
 
 typedef struct {
     unsigned int pulse;
-    unsigned int rotation;
+    unsigned int risingEdge;
+    unsigned int fallingEdge;
+    unsigned long int rotation;
     unsigned char state;
     unsigned char state_old;
 } encoder;
@@ -60,10 +61,10 @@ void interrupt_encoder(char enable, char priority) {
     }
 
     if (enable == ENABLE) {
-        TMR1IE = 1;
+        //        TMR1IE = 1;
         TMR1ON = 1;
-        TMR1H = 0x3C;
-        TMR1L = 0xAF;       
+        TMR1H = 0x00;
+        TMR1L = 0x00;
         RBIE = 1;
     } else if (enable == DISABLE) {
         TMR1IE = 0;
@@ -81,16 +82,47 @@ void encoder_interrupt(void) {
             right.state_old = right.state;
 
             if (right.state) {
-                right.pulse++;
+                //                right.pulse++;
+                right.risingEdge = TMR1;
+            } else {
+
+                right.fallingEdge = TMR1;
+
+                if (right.fallingEdge >= right.risingEdge) {
+
+                    right.rotation = right.fallingEdge - right.risingEdge;
+
+                } else {
+
+                    right.rotation = LIMIT_16BIT - right.risingEdge;
+                    right.rotation += right.fallingEdge;
+                }
+
             }
         }
 
         left.state = ENCL;
+
         if (left.state != left.state_old) {
             left.state_old = left.state;
 
             if (left.state) {
-                left.pulse++;
+                //                left.pulse++;
+                left.risingEdge = TMR1;
+
+            } else {
+
+                left.fallingEdge = TMR1;
+
+                if (left.fallingEdge >= left.risingEdge) {
+
+                    left.rotation = left.fallingEdge - left.risingEdge;
+                } else {
+
+                    left.rotation = LIMIT_16BIT - left.risingEdge;
+                    left.rotation += left.fallingEdge;
+                }
+
             }
         }
 
@@ -114,19 +146,27 @@ void update_speed(void) {
         TMR1L = 0xAF;
         TMR1ON = 1;
         RBIE = 1;
-        
+
         TMR1IF = 0;
 
     }
 
 }
 
-unsigned int get_speed(side sideEncoder) {
+unsigned long int get_speed(side sideEncoder) {
 
     if (sideEncoder == ENCODER_RIGHT) {
+        
+        right.rotation *= 8;
+        right.rotation = 10000000 / right.rotation;
         return right.rotation;
+        
     } else if (sideEncoder == ENCODER_LEFT) {
+
+        left.rotation *= 8;
+        left.rotation = 10000000 / left.rotation;
         return left.rotation;
+        
     } else {
         return NULL;
     }
