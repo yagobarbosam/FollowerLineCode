@@ -19,9 +19,5 @@ void PWMtimer0_B_pin(char *port, char *tris, char pino);
 void PWMtimer0_B(unsigned char duty);
 
 
-#define NO_PRIORITY 0
-#define HIGH_PRIORITY 1
-#define LOW_PRIORITY 2
-
 #endif	/* PWM_TIMER0_H */
 
