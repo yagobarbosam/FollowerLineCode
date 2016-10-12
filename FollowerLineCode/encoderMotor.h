@@ -12,7 +12,7 @@ typedef enum{ENCODER_RIGHT,ENCODER_LEFT}side;
 
 void encoder_interrupt(void);
 void update_speed(void);
-unsigned int get_speed(side sideEncoder);
+unsigned int long get_speed(side sideEncoder);
 void interrupt_encoder(char enable, char priority);
 
 #endif	/* ENCODERMOTOR_H */
