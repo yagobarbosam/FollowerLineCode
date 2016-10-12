@@ -15,21 +15,23 @@
 #include "serial.h"
 #include "averageMoving.h"
 #include "encoderMotor.h"
+#include "PID_controlerMotor.h"
 
 #define LIMITE 50
 
-long unsigned int pwm;
+unsigned int pwm;
+signed int pwm_1;
 
 unsigned int direita, esquerda;
 
 void interrupt high_priority ISR() {
 
-    PWMtimer2_B(150);
+    PWMtimer2_B(pwm);
 
-    PWMtimer0_B(100);
+    PWMtimer0_B(pwm);
 
     encoder_interrupt();
-    update_speed();
+    //    update_speed();
 
 }
 
@@ -39,7 +41,7 @@ void main(void) {
     char valorH, valorL, i;
     unsigned long int j;
 
-    
+
 
     TRISD1 = 0;
     TRISD3 = 0;
@@ -58,7 +60,8 @@ void main(void) {
 
     serial_config();
 
-
+    setup_setpoint(1000);
+    setup_PID(0.2, 0, 0);
 
 
     //    linha_branca();
@@ -70,6 +73,21 @@ void main(void) {
 
         direita = get_speed(ENCODER_RIGHT);
         esquerda = get_speed(ENCODER_LEFT);
+
+        pwm_1 = PID(direita);
+        pwm_1 += 126;
+        
+        if (pwm_1 <= 0) {
+            pwm = 0;
+        } else if (pwm_1 >= 255) {
+            pwm = 255;
+        } else {
+            pwm = pwm_1;
+        }
+
+
+
+//        for (j = 0; j < 10000; j++);
 
         if (RD5) {
             break;
